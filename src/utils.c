@@ -107,7 +107,7 @@ int strncmp_with_mismatch (const char *orig_bc, const char *orig_read, size_t mi
 
 // https://stackoverflow.com/questions/21880730/c-what-is-the-best-and-fastest-way-to-concatenate-strings
 //TODO this is a fastq mystrcat function, that returns a pointer to the end of the string
-char * get_fqread(kseq_t *fqrec, const char *barcode, int no_comment, int remove_seq) {
+char * get_fqread(kseq_t *fqrec, char *barcode, int no_comment, int remove_seq) {
 
     size_t fqread_size = 0;
 
@@ -122,12 +122,12 @@ char * get_fqread(kseq_t *fqrec, const char *barcode, int no_comment, int remove
 
     char *umi = NULL;
 
-    if(barcode) {
+    if(barcode[0] != '\0') {
         umi = (char*) malloc( strlen(fqrec->seq.s)-strlen(barcode) + 1 );
-        strcat(umi, fqrec->seq.s+strlen(barcode));
+        strcpy(umi, (fqrec->seq.s)+strlen(barcode));
         fqread_size += strlen(umi);
     }
-
+    
     char *fqread = (char*) malloc(fqread_size + 1);
     //makes it a zero length string
     fqread[0] = '\0';
@@ -137,16 +137,18 @@ char * get_fqread(kseq_t *fqrec, const char *barcode, int no_comment, int remove
     strcat(fqread, "@");
     strcat(fqread, fqrec->name.s);
     //TODO later can have conditional here depending on the the structure and/or BARCODE/UMI
-    if(barcode) {
+    if(barcode[0] != '\0') {
         strcat(fqread, ":");
         strcat(fqread, barcode);
 
-        if(!umi) {
+        if(umi[0] == '\0') {
             fprintf(stderr, "Error: This shouldn't happened.\n");
+            exit(EXIT_FAILURE);
         }
 
         strcat(fqread, ":");
         strcat(fqread, umi);
+        free(umi);
     }
 
     if(fqrec->comment.l && no_comment == -1) {

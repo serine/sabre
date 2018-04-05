@@ -12,6 +12,6 @@ char *strdup(const char*);
 
 int strncmp_with_mismatch (const char *orig_bc, const char *orig_read, size_t mismatch, int max_5prime_crop);
 const char * _mkdir (const char *dir);
-char * get_fqread(kseq_t *fqrec, const char *barcode, int no_comment, int remove_seq);
+char * get_fqread(kseq_t *fqrec, char *barcode, int no_comment, int remove_seq);
 
 #endif /*UTILS_H*/

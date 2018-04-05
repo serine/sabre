@@ -39,8 +39,8 @@ void paired_usage (int status) {
             \n\
             \n    Required:\
             \n\
-            \n        -f, --fq1 FILE            Input FASTQ R1 file\
-            \n        -r, --fq2 FILE            Input FASTQ R2 file OR FASTQ with barcodes only\
+            \n        -f, --fq1 FILE            Input FASTQ R1 file, must have barcodes\
+            \n        -r, --fq2 FILE            Input FASTQ R2 file\
             \n        -b, --barcodes FILE       Barcodes files, one barcode per line, e.g B\\tR1\\tR2\
             \n        -u, --unassigned1 FILE    Output unassigned R1 reads to [unassigned_R1.fastq]\
             \n        -w, --unassigned2 FILE    Output unassigned R2 reads to [unassigned_R1.fastq]\
@@ -276,6 +276,9 @@ int paired_main (int argc, char *argv[]) {
         /* Go through all barcode data and check if any match to beginning of read */
         /* If it does then put read in that barcode's file, otherwise put in unknown file */
         curr = head;
+        //NOTE here were are going through R1 only, that is -f,--fq1 reads and checking if they have a barcode
+        //It appears that R1 is the file that must at least have barcodes and R2 may not have, but we are still going to 
+        //appened it into FASTQ header of both R1 and R2 reads
         while (curr) {
             //zero means no mismatches found, that is barcode was found for that reads, therefore break and write it out
             if (strncmp_with_mismatch (curr->bc, fqrec1->seq.s, mismatch, max_5prime_crop) == 0) {
@@ -286,10 +289,10 @@ int paired_main (int argc, char *argv[]) {
 
         if (curr != NULL) {
             // if UMI is shorter then 10, discard the reads
-            if(strlen((fqrec1->seq.s)+strlen(curr->bc)) >= min_umi_len) {
-                char *fqread1 = get_fqread(fqrec1, curr->bc, no_comment, remove_seq);
+            if(strlen((fqrec1->seq.s)+strlen(barcode)) >= min_umi_len) {
+                char *fqread1 = get_fqread(fqrec1, curr->bc, no_comment, -1);
                 char *fqread2 = get_fqread(fqrec2, curr->bc, no_comment, remove_seq);
-                
+
                 fprintf(curr->bcfile1, "%s", fqread1);
                 fprintf(curr->bcfile2, "%s", fqread2);
 
