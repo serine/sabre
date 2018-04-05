@@ -234,6 +234,7 @@ int paired_main (int argc, char *argv[]) {
             \n      --max-5prime-crop %d\
             \n      --stats %s\
             \n      --no-comment %d\
+            \n      --remove-seq %d\
             \n\
             \n  In Progess...\
             \n", PROGRAM_NAME,\
@@ -241,7 +242,7 @@ int paired_main (int argc, char *argv[]) {
             barfn,\
             unknownfn1, unknownfn2,\
             both_have_barcodes,\
-            mismatch, min_umi_len, max_5prime_crop, log_fn, no_comment);
+            mismatch, min_umi_len, max_5prime_crop, log_fn, no_comment, remove_seq);
 
     /* Creating linked list of barcode data */
     // https://www.hackerearth.com/practice/data-structures/linked-list/singly-linked-list/tutorial/
