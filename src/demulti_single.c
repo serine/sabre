@@ -8,10 +8,7 @@
 #include <zlib.h>
 #include <string.h>
 #include "sabre.h"
-#include "kseq.h"
-
-KSEQ_INIT(gzFile, gzread)
-
+#include "utils.h"
 
 static struct option single_long_options[] = {
   {"fastq-file", required_argument, 0, 'f'},
@@ -45,7 +42,6 @@ int single_main (int argc, char *argv[]) {
 
 	gzFile se=NULL;
 	kseq_t *fqrec;
-	int debug=0;
 	int optc;
 	extern char *optarg;
 	FILE* barfile = NULL;
@@ -93,10 +89,6 @@ int single_main (int argc, char *argv[]) {
 
 			case 'z':
 				quiet=1;
-				break;
-
-			case 'd':
-				debug = 1;
 				break;
 
 			case_GETOPT_HELP_CHAR(single_usage)

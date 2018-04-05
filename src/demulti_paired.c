@@ -9,9 +9,7 @@
 #include <zlib.h>
 #include <time.h>
 #include "sabre.h"
-#include "kseq.h"
-
-KSEQ_INIT(gzFile, gzread)
+#include "utils.h"
 
     //more about getopts http://www.informit.com/articles/article.aspx?p=175771&seqNum=3
     static struct option paired_long_options[] = {
@@ -26,7 +24,7 @@ KSEQ_INIT(gzFile, gzread)
         {"max-5prime-crop", required_argument, 0, 'a'},
         {"stats", required_argument, NULL, 's'},
         {"no-comment", no_argument, 0, 'n'},
-        //{"quiet", no_argument, 0, 'z'},
+        {"remove-seq", no_argument, 0, 'x'},
         {GETOPT_HELP_OPTION_DECL},
         {GETOPT_VERSION_OPTION_DECL},
         {NULL, 0, NULL, 0}
@@ -54,6 +52,7 @@ void paired_usage (int status) {
             \n        -l, --min-umi-len INT         Minimum UMI length to keep [0]\
             \n        -a, --max-5prime-crop INT     Maximum number of possible bases cropped from 5prime [0]\
             \n        -n, --no-comment              Drop extra comments from FASTQ header [NULL]\
+            \n        -x, --remove-seq              Replace --fq2 sequences with an N base. Only use if your R2 has just barcodes [NULL]\
             \n        -s, --stats FILE              Write stats to file instead of STDOUT [STDOUT]\
             \n\
             \n",
@@ -77,7 +76,6 @@ int paired_main (int argc, char *argv[]) {
     FILE* unknownfile1=NULL;
     FILE* unknownfile2=NULL;
     FILE* log_file=NULL;
-    int debug=0;
     int optc;
     extern char *optarg;
     char *infn1=NULL;
@@ -93,17 +91,17 @@ int paired_main (int argc, char *argv[]) {
     int num_unknown=0;
     int total=0;
     int mismatch=0;
-    //int quiet=0;
 
     int min_umi_len=0;
     int max_5prime_crop=0;
     char *log_fn=NULL;
     int no_comment=-1;
+    int remove_seq=-1;
 
     while (1) {
         int option_index = 0;
         //colon after a flag means should have arguments and no colon means just a flag i.e bool, no args after it
-        optc = getopt_long (argc, argv, "dcnf:r:b:u:w:m:s:l:z:a:", paired_long_options, &option_index);
+        optc = getopt_long (argc, argv, "cnf:r:b:u:w:m:s:l:a:", paired_long_options, &option_index);
 
         if (optc == -1) break;
 
@@ -164,14 +162,6 @@ int paired_main (int argc, char *argv[]) {
 
             case 'n':
             no_comment = 1;
-            break;
-
-            case 'z':
-            //quiet=1;
-            break;
-
-            case 'd':
-            debug = 1;
             break;
 
             case_GETOPT_HELP_CHAR(paired_usage);
@@ -296,67 +286,28 @@ int paired_main (int argc, char *argv[]) {
         if (curr != NULL) {
             // if UMI is shorter then 10, discard the reads
             if(strlen((fqrec1->seq.s)+strlen(curr->bc)) >= min_umi_len) {
-                //@READNAME:BACRCODE:UMI
-                fprintf (curr->bcfile1, "@%s:%s:%s", fqrec1->name.s, curr->bc, (fqrec1->seq.s)+strlen(curr->bc));
-                if (fqrec1->comment.l && no_comment == -1) fprintf (curr->bcfile1, " %s\n", fqrec1->comment.s);
-                else fprintf (curr->bcfile1, "\n");
+                char *fqread1 = get_fqread(fqrec1, curr->bc, no_comment, remove_seq);
+                char *fqread2 = get_fqread(fqrec2, curr->bc, no_comment, remove_seq);
+                
+                fprintf(curr->bcfile1, "%s", fqread1);
+                fprintf(curr->bcfile2, "%s", fqread2);
 
-                //fprintf (curr->bcfile1, "%s\n", (fqrec1->seq.s)+strlen(curr->bc));
-                //This tmp hack knowning that data is single end, and R2 is simply a string of BARCODE+UMI
-                fprintf (curr->bcfile1, "N\n");
-
-                fprintf (curr->bcfile1, "+%s", fqrec1->name.s);
-                if (fqrec1->comment.l) fprintf (curr->bcfile1, " %s\n", fqrec1->comment.s);
-                else fprintf (curr->bcfile1, "\n");
-
-                fprintf (curr->bcfile1, "%s\n", (fqrec1->qual.s)+strlen(curr->bc));
-
-
-                //fprintf (curr->bcfile2, "@%s:%s", fqrec2->name.s, curr->bc);
-                //@READNAME:BACRCODE:UMI
-                fprintf (curr->bcfile2, "@%s:%s:%s", fqrec2->name.s, curr->bc, (fqrec1->seq.s)+strlen(curr->bc));
-                if (fqrec2->comment.l && no_comment == -1) fprintf (curr->bcfile2, " %s\n", fqrec2->comment.s);
-                else fprintf (curr->bcfile2, "\n");
-
-                if (!both_have_barcodes) fprintf (curr->bcfile2, "%s\n", fqrec2->seq.s);
-                else fprintf (curr->bcfile2, "%s\n", (fqrec2->seq.s)+strlen(curr->bc));
-
-                fprintf (curr->bcfile2, "+%s", fqrec2->name.s);
-                if (fqrec2->comment.l) fprintf (curr->bcfile2, " %s\n", fqrec2->comment.s);
-                else fprintf (curr->bcfile2, "\n");
-
-                if (!both_have_barcodes) fprintf (curr->bcfile2, "%s\n", fqrec2->qual.s);
-                else fprintf (curr->bcfile2, "%s\n", (fqrec2->qual.s)+strlen(curr->bc));
+                free(fqread1);
+                free(fqread2);
 
                 curr->num_records += 2;
             }
         }
 
         else {
-            fprintf (unknownfile1, "@%s", fqrec1->name.s);
-            if (fqrec1->comment.l) fprintf (unknownfile1, " %s\n", fqrec1->comment.s);
-            else fprintf (unknownfile1, "\n");
+            char *fqread1 = get_fqread(fqrec1, NULL, no_comment, remove_seq);
+            char *fqread2 = get_fqread(fqrec2, NULL, no_comment, remove_seq);
+            
+            fprintf(unknownfile1, "%s", fqread1);
+            fprintf(unknownfile2, "%s", fqread2);
 
-            fprintf (unknownfile1, "%s\n", fqrec1->seq.s);
-
-            fprintf (unknownfile1, "+%s", fqrec1->name.s);
-            if (fqrec1->comment.l) fprintf (unknownfile1, " %s\n", fqrec1->comment.s);
-            else fprintf (unknownfile1, "\n");
-
-            fprintf (unknownfile1, "%s\n", fqrec1->qual.s);
-
-
-            fprintf (unknownfile2, "@%s", fqrec2->name.s);
-            if (fqrec2->comment.l) fprintf (unknownfile2, " %s\n", fqrec2->comment.s);
-            else fprintf (unknownfile2, "\n");
-
-            fprintf (unknownfile2, "%s\n", fqrec2->seq.s);
-
-            fprintf (unknownfile2, "+%s", fqrec2->name.s);
-            if (fqrec2->comment.l) fprintf (unknownfile2, " %s\n", fqrec2->comment.s);
-            else fprintf (unknownfile2, "\n");
-
-            fprintf (unknownfile2, "%s\n", fqrec2->qual.s);
+            free(fqread1);
+            free(fqread2);
 
             num_unknown += 2;
         }
@@ -372,7 +323,6 @@ int paired_main (int argc, char *argv[]) {
     }
 
 
-    //if (!quiet) {
     //if (!log_fn) { is this better?
     if (log_fn == NULL) {
         log_file = stdout;

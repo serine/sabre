@@ -1,7 +1,7 @@
 PROGRAM_NAME = sabre
 VERSION = 1.00
 CC = gcc
-CFLAGS = -Wall -O2 -pedantic -DVERSION=$(VERSION)
+CFLAGS = -Wall -O2 -std=c99 -pedantic -DVERSION=$(VERSION)
 DEBUG = -g
 OPT = -O3
 ARCHIVE = $(PROGRAM_NAME)_$(VERSION)
@@ -18,7 +18,7 @@ demulti_single.o: $(SDIR)/demulti_single.c $(SDIR)/sabre.h $(SDIR)/kseq.h
 demulti_paired.o: $(SDIR)/demulti_paired.c $(SDIR)/sabre.h $(SDIR)/kseq.h
 	$(CC) $(CFLAGS) $(OPT) -c $(SDIR)/$*.c
 
-utils.o: $(SDIR)/utils.c $(SDIR)/sabre.h
+utils.o: $(SDIR)/utils.c $(SDIR)/utils.h $(SDIR)/sabre.h
 	$(CC) $(CFLAGS) $(OPT) -c $(SDIR)/$*.c
 
 sabre.o: $(SDIR)/sabre.c $(SDIR)/sabre.h
