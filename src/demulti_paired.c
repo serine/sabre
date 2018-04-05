@@ -15,11 +15,11 @@ KSEQ_INIT(gzFile, gzread)
 
     //more about getopts http://www.informit.com/articles/article.aspx?p=175771&seqNum=3
     static struct option paired_long_options[] = {
-        {"pe-file1", required_argument, NULL, 'f'},
-        {"pe-file2", required_argument, NULL, 'r'},
-        {"barcode-file", required_argument, NULL, 'b'},
-        {"unknown-output1", required_argument, NULL, 'u'},
-        {"unknown-output2", required_argument, NULL, 'w'},
+        {"fq1", required_argument, NULL, 'f'},
+        {"fq2", required_argument, NULL, 'r'},
+        {"barcodes", required_argument, NULL, 'b'},
+        {"unassigned1", required_argument, NULL, 'u'},
+        {"unassigned2", required_argument, NULL, 'w'},
         {"both-barcodes", optional_argument, NULL, 'c'},
         {"max-mismatch", required_argument, 0, 'm'},
         {"min-umi-len", required_argument, 0, 'l'},
@@ -33,19 +33,19 @@ KSEQ_INIT(gzFile, gzread)
     };
 
 void paired_usage (int status) {
-
-    fprintf (stderr, "\n  Usage: %s pe [OPTIONS] -f <fastq_R1> -r <fastq_R2> -b <barcode_file> -u <unassigned_R1> -w <unassigned_R2>\
+    //TODO if --both-barcodes if given then --fq2 can't just be barcodes only 
+    fprintf (stderr, "\n  Usage: %s pe [OPTIONS] -f <FASTQ_R1> -r <FASTQ_R2> -b <BARCODES>\
             \n\
             \n\
             \n  Options:\
             \n\
             \n    Required:\
             \n\
-            \n        -f, --pe-file1 FILE           Input FASTQ R1 read\
-            \n        -r, --pe-file2 FILE           Input FASTQ R2 reads\
-            \n        -b, --barcode-file FILE       Barcodes files, one barcode per line, e.g B\\tR1\\tR2\
-            \n        -u, --unknown-output1 FILE    Output unassigned R1 reads\
-            \n        -w, --unknown-output2 FILE    Output unassigned R2 reads\
+            \n        -f, --fq1 FILE            Input FASTQ R1 file\
+            \n        -r, --fq2 FILE            Input FASTQ R2 file OR FASTQ with barcodes only\
+            \n        -b, --barcodes FILE       Barcodes files, one barcode per line, e.g B\\tR1\\tR2\
+            \n        -u, --unassigned1 FILE    Output unassigned R1 reads to [unassigned_R1.fastq]\
+            \n        -w, --unassigned2 FILE    Output unassigned R2 reads to [unassigned_R1.fastq]\
             \n\
             \n    Other:\
             \n\
@@ -233,11 +233,11 @@ int paired_main (int argc, char *argv[]) {
     fprintf(stderr, "\n\
             \n  Running: %s\
             \n  Command line args:\
-            \n      --pe-file1 %s\
-            \n      --pe-file2 %s\
-            \n      --barcode-file %s\
-            \n      --unknown-output1 %s\
-            \n      --unknown-output2 %s\
+            \n      --fq1 %s\
+            \n      --fq2 %s\
+            \n      --barcodes %s\
+            \n      --unassigned1 %s\
+            \n      --unassigned2 %s\
             \n      --both-barcodes %d\
             \n      --max-mismatch %d\
             \n      --min-umi-len %d\
