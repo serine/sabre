@@ -48,6 +48,7 @@ typedef struct listel_p {
 	//typedef struct barcode_t *b
 	// this is a pointer to an array of pointers
 	char **bc;
+	char **bc_rev_comp;
 	char *bc_grp;
 	int num_records;
 	FILE* bcfile1;

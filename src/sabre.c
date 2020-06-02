@@ -165,8 +165,9 @@ int main(int argc, char *argv[]) {
 
     params.fq2_fd = gzopen(fq2_fn, "r");
     if(!params.fq2_fd) {
-        fprintf(stderr, "ERROR: Could not open input file R2 '%s'.\n", fq2_fn);
-        exit(EXIT_FAILURE);
+        fprintf(stderr, "WARNING: Could not open input file R2 '%s'.\n", fq2_fn);
+        //fprintf(stderr, "ERROR: Could not open input file R2 '%s'.\n", fq2_fn);
+        //exit(EXIT_FAILURE);
     }
 
     params.unassigned1_fd = fopen(unassigned1_fn, "wb");
@@ -220,7 +221,8 @@ int main(int argc, char *argv[]) {
     curr = NULL;
 
     char line_buff[1024];
-    int max_items = 6;
+    //NOTE ESetting hard limit on number of barcode you allowed to have
+    int max_items = 8;
     while(fgets(line_buff, 1024, bc_fd)) {
         curr = (barcode_data_t*) malloc(sizeof(barcode_data_t));
 
@@ -244,12 +246,16 @@ int main(int argc, char *argv[]) {
 
         //TODO for hardcode max limit of items in the barcodes file to 6
         curr->bc = calloc(max_items, sizeof(void*));
+        curr->bc_rev_comp = calloc(max_items, sizeof(void*));
 
         int i=0;
+        fprintf(stdout, "  Barcode group\t%s", p);
         while(i <= max_items && (p = strtok(NULL, "\t\n"))) {
             // remove the token, new line char
             curr->bc[i] = strdup(p);
-            fprintf(stdout, "  BC %s ", curr->bc[i]);
+            curr->bc_rev_comp[i] = strdup(p);
+            do_rev_comp(curr->bc_rev_comp[i]);
+            fprintf(stdout, "\t%s", curr->bc[i]);
             i++;
         }
         fprintf(stdout, "\n");
@@ -355,6 +361,7 @@ int main(int argc, char *argv[]) {
 
         free (curr->bc_grp);
         free (curr->bc);
+        free (curr->bc_rev_comp);
         temp = curr;
         curr = curr->next;
         free (temp);

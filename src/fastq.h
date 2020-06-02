@@ -9,6 +9,7 @@ typedef struct {
     char name[LINE_SIZE];
     char *comment;
     char seq[LINE_SIZE];
+    char seq_rev_comp[LINE_SIZE];
     char other[LINE_SIZE];
     char qual[LINE_SIZE];
 } fq_rec_t;

@@ -1,5 +1,6 @@
 
 #include "fastq.h"
+#include "utils.h"
 
 int get_line(gzFile fq_fd, char *line, int buff) {
 
@@ -35,13 +36,15 @@ int get_fq_rec(fq_rec_t *fq_rec, gzFile fq_fd) {
         fq_rec->comment = NULL;
     }
     // before writing it out check that comment isn't null
-
+    strcpy(fq_rec->seq_rev_comp, fq_rec->seq);
+    do_rev_comp(fq_rec->seq_rev_comp);
     return done;
 }
 
 void init_fq_rec(fq_rec_t *fq_rec) {
     fq_rec->name[0] = '\0';
     fq_rec->seq[0] = '\0';
+    fq_rec->seq_rev_comp[0] = '\0';
     fq_rec->other[0] = '\0';
     fq_rec->qual[0] = '\0';
 }

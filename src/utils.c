@@ -224,6 +224,39 @@ void get_bc_fn(char **bcout_fn, char *s_name, char *barcode, int read_type) {
     }
 }
 
+void do_rev_comp(char *seq) {
+    // this code was taken from seqtk with slight modification to drop kseq struct
+    // https://github.com/lh3/seqtk
+    char comp_tab[] = {
+         0,   1,   2,   3,   4,   5,   6,   7,   8,   9,  10,  11,  12,  13,  14,  15,
+        16,  17,  18,  19,  20,  21,  22,  23,  24,  25,  26,  27,  28,  29,  30,  31,
+        32,  33,  34,  35,  36,  37,  38,  39,  40,  41,  42,  43,  44,  45,  46,  47,
+        48,  49,  50,  51,  52,  53,  54,  55,  56,  57,  58,  59,  60,  61,  62,  63,
+        64, 'T', 'V', 'G', 'H', 'E', 'F', 'C', 'D', 'I', 'J', 'M', 'L', 'K', 'N', 'O',
+        'P', 'Q', 'Y', 'S', 'A', 'A', 'B', 'W', 'X', 'R', 'Z',  91,  92,  93,  94,  95,
+        64, 't', 'v', 'g', 'h', 'e', 'f', 'c', 'd', 'i', 'j', 'm', 'l', 'k', 'n', 'o',
+        'p', 'q', 'y', 's', 'a', 'a', 'b', 'w', 'x', 'r', 'z', 123, 124, 125, 126, 127
+    };
+
+    int seq_len = strlen(seq);
+    int c0, c1;
+    // reverse complement sequence
+    for (int i = 0; i < seq_len>>1; ++i) {
+        c0 = comp_tab[(int)seq[i]];
+        c1 = comp_tab[(int)seq[seq_len - 1 - i]];
+        seq[i] = c1;
+        seq[seq_len - 1 - i] = c0;
+    }
+    // complement the remaining base
+    if(seq_len & 1) {
+        seq[seq_len>>1] = comp_tab[(int)seq[seq_len>>1]];
+    }
+    //if (fqrec1->qual.l) {
+    //    for (i = 0; i < fqrec1->seq.l>>1; ++i) // reverse quality
+    //        c0 = fqrec1->qual.s[i], fqrec1->qual.s[i] = fqrec1->qual.s[fqrec1->qual.l - 1 - i], fqrec1->qual.s[fqrec1->qual.l - 1 - i] = c0;
+    //}
+}
+
 void set_default_params(param_t *params) {
     params->mismatch = 0;
     params->combine = -1;

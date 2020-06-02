@@ -81,10 +81,11 @@ void* demult_runner(void *arg) {
         while(curr) {
 
             for (int i=0; curr->bc[i]; i++) {
-                n_crop = chk_bc_mtch(curr->bc[i], fq_rec1->seq, thread_data->params->mismatch, thread_data->params->max_5prime_crop);
+                n_crop = chk_bc_mtch(curr->bc_rev_comp[i], fq_rec1->seq_rev_comp, thread_data->params->mismatch, thread_data->params->max_5prime_crop);
                 if(n_crop >= 0) {
                     //found matching barcode
-                    actl_bc = strndup( (fq_rec1->seq)+n_crop, strlen(curr->bc[i]) );
+                    actl_bc = strndup( (fq_rec1->seq_rev_comp)+n_crop, strlen(curr->bc[i]) );
+                    do_rev_comp(actl_bc);
                     got_match = 1;
                     break;
                 }
@@ -145,7 +146,7 @@ void* demult_runner(void *arg) {
                 pthread_mutex_unlock(thread_data->out_lock);
 
                 if(thread_data->params->paired > 0) {
-                    get_fqread(fqread2, fq_rec1, actl_bc, umi_idx, thread_data->params->no_comment, n_crop);
+                    get_fqread(fqread2, fq_rec2, actl_bc, umi_idx, thread_data->params->no_comment, n_crop);
 
                     pthread_mutex_lock(thread_data->out_lock);
                     fprintf(curr->bcfile2, fqread2);
