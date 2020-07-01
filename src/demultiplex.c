@@ -169,13 +169,13 @@ void write_out(const param_t *params, pthread_mutex_t *out_lock, metrics_t* metr
 
         }
         else {
-            get_fqread(fqread1, fq_rec1, actl_bc, umi_idx, params->no_comment, best_match.cropped);
+            get_fqread(fqread1, fq_rec1, actl_bc, umi_idx, params->no_comment, best_match.cropped, 0);
 
             pthread_mutex_lock(out_lock);
             fputs(fqread1, best_bc->bcfile1);
 
             if(params->paired > 0) {
-                get_fqread(fqread2, fq_rec1, actl_bc, umi_idx, params->no_comment, best_match.cropped);
+                get_fqread(fqread2, fq_rec2, actl_bc, umi_idx, params->no_comment, best_match.cropped, 1);
 
                 fputs(fqread2, best_bc->bcfile2);
 
@@ -188,7 +188,7 @@ void write_out(const param_t *params, pthread_mutex_t *out_lock, metrics_t* metr
     }
     else {
 
-        get_fqread(fqread1, fq_rec1, NULL, NULL, params->no_comment, 0);
+        get_fqread(fqread1, fq_rec1, NULL, NULL, params->no_comment, 0, 0);
 
         pthread_mutex_lock(out_lock);
         fputs(fqread1, params->unassigned1_fd);
@@ -196,7 +196,7 @@ void write_out(const param_t *params, pthread_mutex_t *out_lock, metrics_t* metr
         metrics->num_unknown += 1;
 
         if(params->paired > 0) {
-            get_fqread(fqread2, fq_rec2, NULL, NULL, params->no_comment, 0);
+            get_fqread(fqread2, fq_rec2, NULL, NULL, params->no_comment, 0, 0);
 
             fputs(fqread2, params->unassigned2_fd);
 

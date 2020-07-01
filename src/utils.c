@@ -109,7 +109,7 @@ match_ret_t chk_bc_mtch(const char *orig_bc, const char *orig_read, size_t max_m
 
 // https://stackoverflow.com/questions/21880730/c-what-is-the-best-and-fastest-way-to-concatenate-strings
 //TODO this is a fastq mystrcat function, that returns a pointer to the end of the string
-void get_fqread(char *fqread, fq_rec_t *fq_rec, const char *barcode, char *umi_idx, int no_comment, int n_crop) {
+void get_fqread(char *fqread, fq_rec_t *fq_rec, const char *barcode, char *umi_idx, int no_comment, int n_crop, int no_cut) {
 
     fqread[0] = '\0';
 
@@ -144,8 +144,14 @@ void get_fqread(char *fqread, fq_rec_t *fq_rec, const char *barcode, char *umi_i
     strcat(fqread, "\n");
 
     //2nd line
-    strcat(fqread, (fq_rec->seq)+strlen(barcode)+n_crop);
-    strcat(fqread, "\n");
+    if(no_cut == 0) {
+        strcat(fqread, (fq_rec->seq)+strlen(barcode)+n_crop);
+        strcat(fqread, "\n");
+    } else {
+        strcat(fqread, fq_rec->seq);
+        strcat(fqread, "\n");
+    }
+
 
     //3rd line
     strcat(fqread, "+");
