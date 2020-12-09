@@ -149,11 +149,11 @@ void get_fqread(char *fqread, fq_rec_t *fq_rec, const char *barcode, char *umi_i
 
     //3rd line
     strcat(fqread, "+");
-    strcat(fqread, fq_rec->name);
-    if(fq_rec->comment && no_comment == -1) {
-        strcat(fqread, " ");
-        strcat(fqread, fq_rec->comment);
-    }
+    // strcat(fqread, fq_rec->name);
+    // if(fq_rec->comment && no_comment == -1) {
+    //    strcat(fqread, " ");
+    //    strcat(fqread, fq_rec->comment);
+    // }
     strcat(fqread, "\n");
 
     //4th line
